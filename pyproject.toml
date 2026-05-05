@@ -1,0 +1,30 @@
+[project]
+name = "kapa-data"
+version = "0.1.0"
+requires-python = "==3.13.*"
+dependencies = [
+    "devtools>=0.12.2",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.4",
+    "pydantic>=2.13.3",
+    "rao>=0.2.5",
+    "scipy>=1.17.1",
+    "torch>=2.11.0",
+    "tqdm>=4.67.3",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu" },
+]
+torchvision = [
+  { index = "pytorch-cpu" },
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
