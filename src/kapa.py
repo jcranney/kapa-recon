@@ -5,11 +5,6 @@ from dataclasses import dataclass, fields
 import json
 
 
-NWFS: int = 1
-NDM: int = 1
-NPARAM_DM = 6
-NPARAM_WFS = 4
-
 @dataclass
 class Perturbations:
     dm_coupling: float = 0.3

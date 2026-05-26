@@ -34,7 +34,6 @@ if __name__ == "__main__":
 
         # run optimisation
         t1 = time.time()
-        # pert_initial = np.zeros(NPARAM_DM * NDM + NPARAM_WFS * NWFS)
         pert_initial = Perturbations()
         result = opt.least_squares(
             lambda pert: cost_vector(pert, imat_true, lgs_wfss[idx]),
