@@ -1,0 +1,12 @@
+command:  python -m kapa_recon.build_reconstructor
+D_REG:
+  - 1e-3
+  - 1e-4
+  - 1e-5
+C_REG:
+  - 1e1
+  - 1e2
+  - 1e3
+TTF:
+  - 1
+  - 0

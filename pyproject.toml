@@ -1,17 +1,30 @@
 [project]
-name = "kapa-data"
-version = "0.1.0"
-requires-python = "==3.13.*"
+name = "kapa-recon"
+version = "0.2.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jesse Cranney", email = "jesse.cranney@anu.edu.au" }
+]
+requires-python = ">=3.13"
 dependencies = [
     "devtools>=0.12.2",
+    "ipython>=9.15.0",
     "matplotlib>=3.10.9",
     "numpy>=2.4.6",
     "pydantic>=2.13.4",
-    "rao>=0.2.5",
+    "pyyaml>=6.0.3",
+    "rao>=0.3.5",
     "scipy>=1.17.1",
+    "scipy-stubs>=1.18.0.1",
+    "taguchi>=1.2.2",
     "torch>=2.12.0",
     "tqdm>=4.67.3",
 ]
+
+[project.scripts]
+fit-imat = "kapa_recon:fit_imat.main"
+build-cmat = "kapa_recon:build_reconstructor.main"
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
@@ -26,5 +39,7 @@ torchvision = [
   { index = "pytorch-cpu" },
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[build-system]
+requires = ["uv_build>=0.11.25,<0.12.0"]
+build-backend = "uv_build"
+

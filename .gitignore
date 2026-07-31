@@ -1,5 +1,8 @@
 input_data/
 output_data/
+*.mr
+ao-system.yaml
+tmp.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
