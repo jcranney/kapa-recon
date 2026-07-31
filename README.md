@@ -13,4 +13,11 @@ source .venv/bin/activate
 ```
 
 If the above completed successfully, you should have a virtual environment
-with the `kapa-recon` package available. Then you can run
+with the `kapa-recon` package available. Then you can run:
+```bash
+fit-imat --help
+```
+and 
+```bash
+build-cmat --help
+```
