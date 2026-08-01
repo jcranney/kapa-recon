@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 from numpy.typing import NDArray
 import pyrao as rao
 import numpy as np
@@ -11,10 +11,11 @@ import datetime
 # Optimisable parameters
 D_REG = float(os.environ.get("D_REG", "1e-4"))
 C_REG = float(os.environ.get("C_REG", "1e2"))
-TTF = bool(os.environ.get("TTF", "1")=="1")
+TTF = bool(os.environ.get("TTF", "1") == "1")
 
 # Constants
 NSUBAP: int = 304
+
 
 def save_recon(recon: np.ndarray, filename: str):
     bytes = recon.astype(dtype=np.dtype("float32").newbyteorder(">")).tobytes()
@@ -27,12 +28,13 @@ def compose_matrix(args: Tuple[Sequence[float], Tuple[int, int]]) -> NDArray:
     return np.array(args[0]).reshape(args[1])
 
 
-def main():
+def main(cmm_reg_diag: Optional[NDArray] = None) -> NDArray:
     parser = argparse.ArgumentParser(
         "build-cmat",
         description="""
 Build an AO reconstructor from a specified AO system definition.
-""")
+""",
+    )
     parser.add_argument(
         "system",
         help='system parameters .yaml file, usually output by "python -m kapa_recon.fit_imat"',
@@ -83,7 +85,10 @@ Build an AO reconstructor from a specified AO system definition.
         f"+/- {dcc.diagonal().std():0.3e} rms"
     )
 
-    cmm += C_REG * np.eye(cmm.shape[0])
+    if cmm_reg_diag is None:
+        cmm += C_REG * np.eye(cmm.shape[0])
+    else:
+        cmm += np.diag(cmm_reg_diag)
     if TTF:
         cmm = tt_filter @ cmm @ tt_filter.T
     if TTF:
@@ -109,10 +114,10 @@ Build an AO reconstructor from a specified AO system definition.
         plt.ylabel("actuators")
         plt.tight_layout()
         plt.savefig(f"{args.plot}.png", dpi=300)
-    
-    save_recon(
-        full_recon, f"{args.prefix}_{descriptor}.mr"
-    )
+
+    save_recon(full_recon, f"{args.prefix}_{descriptor}.mr")
+    return full_recon
+
 
 if __name__ == "__main__":
     main()
