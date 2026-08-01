@@ -57,7 +57,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
         (lgs_rad * np.cos(theta), lgs_rad * np.sin(theta))
         for theta in np.arange(4) * np.pi / 2.0
     ]
-    telescope = rao.Telescope(teldiam=8.0, cobs=0.16)
+    telescope = rao.Telescope(teldiam=10.0, cobs=0.16)
     dms = [
         rao.Dm(
             alt=rao.Altitude(0.0),
