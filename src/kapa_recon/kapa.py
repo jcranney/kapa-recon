@@ -5,6 +5,14 @@ from numpy.typing import NDArray
 from dataclasses import dataclass, fields
 import json
 
+TEL_DIAM: float = 10.0
+NSUBX: int = 20
+NACTX: int = 21
+LGS_RAD: float = 10.0 * 4.848e-6
+GS_ALT: float = 90e3
+
+AS2RAD: float = np.pi / 180 / 60 / 60
+
 
 @dataclass
 class Perturbations:
@@ -52,27 +60,30 @@ class Perturbations:
 
 
 def kapa(pert: Perturbations) -> rao.ExpandedSystem:
-    lgs_rad = 10.0 * 4.848e-6
-    wfs_dirs = [
-        (lgs_rad * np.cos(theta), lgs_rad * np.sin(theta))
-        for theta in np.arange(4) * np.pi / 2.0
+    wfs_dirs: List[Tuple[float, float]] = [
+        (+5.5, +5.5),
+        (+5.5, -5.5),
+        (-5.5, -5.5),
+        (-5.5, +5.5),
     ]
-    telescope = rao.Telescope(teldiam=10.0, cobs=0.16)
+    wfs_dirs = [(d[0] * AS2RAD, d[1] * AS2RAD) for d in wfs_dirs]
+    telescope = rao.Telescope(teldiam=TEL_DIAM, cobs=0.0)
     dms = [
         rao.Dm(
             alt=rao.Altitude(0.0),
             coupling=pert.dm_coupling,
             microns_per_volt=pert.dm_mpv,
-            actu_pos=rao.Positions.rect_grid(21, 8, 8),
-            misreg=rao.MisReg((0.0, 0.0), 0.0, 1.0),
+            actu_pos=rao.Positions.rect_grid(NACTX, TEL_DIAM, TEL_DIAM),
+            misreg=rao.MisReg(delta=(0.0, 0.0), clocking=0.0, zoom=1.0),
         )
     ]
-    subap_pos = rao.Positions.rect_grid(20, 7.6, 7.6)
-
+    subap_pos = rao.Positions.rect_grid(
+        NSUBX, TEL_DIAM * (NSUBX - 1) / NSUBX, TEL_DIAM * (NSUBX - 1) / NSUBX
+    )
     wfss = [
         rao.Wfs(
             dir=wfs_dirs[0],
-            gsalt=rao.Altitude(90e3),
+            gsalt=rao.Altitude(GS_ALT),
             subap_pos=subap_pos,
             misreg=rao.MisReg(
                 (pert.wfs1_delta_x, pert.wfs1_delta_y),
@@ -82,7 +93,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
         ),
         rao.Wfs(
             dir=wfs_dirs[1],
-            gsalt=rao.Altitude(90e3),
+            gsalt=rao.Altitude(GS_ALT),
             subap_pos=subap_pos,
             misreg=rao.MisReg(
                 (pert.wfs2_delta_x, pert.wfs2_delta_y),
@@ -92,7 +103,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
         ),
         rao.Wfs(
             dir=wfs_dirs[2],
-            gsalt=rao.Altitude(90e3),
+            gsalt=rao.Altitude(GS_ALT),
             subap_pos=subap_pos,
             misreg=rao.MisReg(
                 (pert.wfs3_delta_x, pert.wfs3_delta_y),
@@ -102,7 +113,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
         ),
         rao.Wfs(
             dir=wfs_dirs[3],
-            gsalt=rao.Altitude(90e3),
+            gsalt=rao.Altitude(GS_ALT),
             subap_pos=subap_pos,
             misreg=rao.MisReg(
                 (pert.wfs4_delta_x, pert.wfs4_delta_y),
@@ -113,15 +124,23 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
     ]
     ctrl = rao.Ctrl(
         opt_dirs=[(0.0, 0.0)],
-        pos=rao.Positions.rect_grid(41, 8, 8),
+        pos=rao.Positions.rect_grid(41, TEL_DIAM, TEL_DIAM),
         dt=0.0,
     )
+    # TODO: add cn2 profile from .pro file here
     atmos = rao.Atmos(layers=[rao.TurbLayer(0.1, 60.0, rao.Altitude(0.0), 10.0, 0.0)])
     system = rao.CompactSystem(telescope, dms, wfss, ctrl, atmos).expand()
-    reorder_idx = list(np.array([
-        np.arange(2*(20**2)).reshape((2, 20**2)).T.flatten() + i * 2*(20**2)
-        for i in range(4)
-    ]).flatten().astype(int))
+    reorder_idx = list(
+        np.array(
+            [
+                np.arange(2 * (NSUBX**2)).reshape((2, NSUBX**2)).T.flatten()
+                + i * 2 * (NSUBX**2)
+                for i in range(4)
+            ]
+        )
+        .flatten()
+        .astype(int)
+    )
     system.reorder_meas(reorder_idx)
     system.filter_meas(keck_measurement_mask())
     system.filter_com(keck_actuator_mask())
@@ -135,7 +154,7 @@ def build_imat(system: rao.ExpandedSystem) -> NDArray:
 
 
 def keck_actuator_mask() -> Sequence[bool]:
-    yy, xx = np.meshgrid(np.arange(21), np.arange(21), indexing="ij")
+    yy, xx = np.meshgrid(np.arange(NACTX), np.arange(NACTX), indexing="ij")
     rr = ((xx.flatten() - xx.mean()) ** 2 + (yy.flatten() - yy.mean()) ** 2) ** 0.5
     r = 10.5
     valid = rr < r
@@ -148,7 +167,7 @@ def keck_actuator_mask() -> Sequence[bool]:
 
 
 def keck_measurement_mask() -> Sequence[bool]:
-    yy, xx = np.meshgrid(np.arange(20), np.arange(20), indexing="ij")
+    yy, xx = np.meshgrid(np.arange(NSUBX), np.arange(NSUBX), indexing="ij")
     rr = ((xx.flatten() - xx.mean()) ** 2 + (yy.flatten() - yy.mean()) ** 2) ** 0.5
     r = 10
     cobs = 2
@@ -159,14 +178,15 @@ def keck_measurement_mask() -> Sequence[bool]:
     #         print("s " if entry else "- ", end="")
     #     print("")
     # print("")
-    valid = np.tile(np.tile(valid[:, None], [1, 2]).flatten(),[4])
+    valid = np.tile(np.tile(valid[:, None], [1, 2]).flatten(), [4])
     return list(valid.astype(bool))
+
 
 if __name__ == "__main__":
     system = kapa(Perturbations())
     imat = build_imat(system)
     print(imat.shape)
     import matplotlib.pyplot as plt
+
     plt.matshow(imat)
-    plt.savefig("tmp.png") 
-    
+    plt.savefig("tmp.png")

@@ -96,5 +96,7 @@ LGS interaction matrix, for the Keck KAPA system.
         plt.savefig(args.plot, dpi=300)
         plt.close()
 
+    # TODO: add plot of subaperture vs actuator vs pupil coordinates
+
 if __name__ == "__main__":
     main()
