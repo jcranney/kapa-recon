@@ -192,7 +192,7 @@ def plot_system(system: rao.ExpandedSystem, ax: Axes):
     altitude = 0.0
     meas_coords = system.meas_coords(altitude)
     ax.axvline(color="k", linestyle=":", linewidth=0.5)
-    ax.axhline(color="k", linestyle=":",linewidth=0.5)
+    ax.axhline(color="k", linestyle=":", linewidth=0.5)
     legend = {}
     for w in range(4):
         # for each wfs
@@ -209,11 +209,11 @@ def plot_system(system: rao.ExpandedSystem, ax: Axes):
             corners += [corners[0]]
             corners_arr = np.array(corners).T
             # plot a square with the appropriate position
-            line, = ax.plot(*corners_arr, color=color, label=f"WFS-{w+1:d}")
+            (line,) = ax.plot(*corners_arr, color=color, label=f"WFS-{w+1:d}")
             legend[f"WFS-{w+1}"] = line
 
     actu_coords = np.array([x.pos() for x in system.actu_coords()])
-    line, = ax.plot(*actu_coords.T, "x", color="#ff0000", label="DM")
+    (line,) = ax.plot(*actu_coords.T, "x", color="#ff0000", label="DM")
     legend["DM"] = line
     ax.legend(handles=legend.values())
     ax.set_title(f"WFS/DM Registration, KAPA, {altitude:0.1f} km")
