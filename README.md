@@ -21,3 +21,6 @@ and
 ```bash
 build-cmat --help
 ```
+
+## See also:
+ - [kapa imat fitting](./KAPA_imat_fitting.md)

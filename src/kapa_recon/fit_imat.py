@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from kapa_recon.disp_imat import read_array, write_array
 import glob
 from typing import Sequence
-from kapa_recon.kapa import Perturbations, build_imat, kapa
+from kapa_recon.kapa import Perturbations, build_imat, kapa, plot_system
 import numpy as np
 import argparse
 
@@ -21,13 +21,15 @@ def cost_vector(pert: Sequence[float], imat_true: NDArray) -> NDArray:
     err = (imat_true - build_imat(system)).flatten()
     return err
 
+
 def main():
     parser = argparse.ArgumentParser(
         "fit-imat",
         description="""
 Optimise parameters of a synthetic LGS interaction matrix model to fit a measured
 LGS interaction matrix, for the Keck KAPA system.
-""")
+""",
+    )
     parser.add_argument(
         "imats",
         help='glob pattern for LGS interaction matrices, e.g.: "./24.imx-LGS*"',
@@ -63,6 +65,8 @@ LGS interaction matrix, for the Keck KAPA system.
     def cost_fun(pert: NDArray) -> NDArray:
         return cost_vector(list(pert), imat_true)
 
+    # perturbations = Perturbations()
+
     result = opt.least_squares(
         cost_fun,
         pert_initial.to_list(),
@@ -78,7 +82,8 @@ LGS interaction matrix, for the Keck KAPA system.
     print(result)
     print("estimate:")
     perturbations = Perturbations.from_list(result["x"])
-    # perturbations.save("./output_data/perturbations.json")
+    perturbations.save("./output_data/perturbations.json")
+
     pprint(perturbations)
     expanded_system = kapa(perturbations)
     expanded_system.save_yaml(args.output)
@@ -88,15 +93,22 @@ LGS interaction matrix, for the Keck KAPA system.
         write_array(args.save, imat_est)
 
     if args.plot:
-        fig, ax = plt.subplots(1, 3, figsize=(10, 10))
+        _, ax = plt.subplots(1, 3, figsize=(10, 10))
         clim = (imat_true.min() / 10.0, imat_true.max() / 10.0)
         for a, im in zip(ax, [imat_true, imat_est, imat_true - imat_est]):
             a.imshow(im, vmin=clim[0], vmax=clim[1])
+        ax[0].set_title("measured imat")
+        ax[1].set_title("fitted imat")
+        ax[2].set_title("residual")
         plt.tight_layout()
         plt.savefig(args.plot, dpi=300)
         plt.close()
 
-    # TODO: add plot of subaperture vs actuator vs pupil coordinates
+    # plot of subaperture vs actuator vs pupil coordinates
+    _, ax = plt.subplots(1, 1, figsize=[10, 10])
+    plot_system(expanded_system, ax)
+    plt.savefig("tmp.svg", dpi=300)
+
 
 if __name__ == "__main__":
     main()

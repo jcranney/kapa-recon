@@ -1,3 +1,4 @@
+from matplotlib.axes import Axes
 import pyrao as rao
 import numpy as np
 from typing import List, Sequence, Tuple
@@ -10,7 +11,7 @@ NSUBX: int = 20
 NACTX: int = 21
 LGS_RAD: float = 10.0 * 4.848e-6
 GS_ALT: float = 90e3
-
+NSUBAP_SAMPLES: int = 3
 AS2RAD: float = np.pi / 180 / 60 / 60
 
 
@@ -90,6 +91,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs1_clocking,
                 pert.wfs1_zoom,
             ),
+            subap_samples=NSUBAP_SAMPLES,
         ),
         rao.Wfs(
             dir=wfs_dirs[1],
@@ -100,6 +102,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs2_clocking,
                 pert.wfs2_zoom,
             ),
+            subap_samples=NSUBAP_SAMPLES,
         ),
         rao.Wfs(
             dir=wfs_dirs[2],
@@ -110,6 +113,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs3_clocking,
                 pert.wfs3_zoom,
             ),
+            subap_samples=NSUBAP_SAMPLES,
         ),
         rao.Wfs(
             dir=wfs_dirs[3],
@@ -120,6 +124,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs4_clocking,
                 pert.wfs4_zoom,
             ),
+            subap_samples=NSUBAP_SAMPLES,
         ),
     ]
     ctrl = rao.Ctrl(
@@ -180,6 +185,39 @@ def keck_measurement_mask() -> Sequence[bool]:
     # print("")
     valid = np.tile(np.tile(valid[:, None], [1, 2]).flatten(), [4])
     return list(valid.astype(bool))
+
+
+def plot_system(system: rao.ExpandedSystem, ax: Axes):
+    # fig = plt.figure(figsize=[10, 10])
+    altitude = 0.0
+    meas_coords = system.meas_coords(altitude)
+    ax.axvline(color="k", linestyle=":", linewidth=0.5)
+    ax.axhline(color="k", linestyle=":",linewidth=0.5)
+    legend = {}
+    for w in range(4):
+        # for each wfs
+        color = [
+            "#880088",
+            "#888800",
+            "#008888",
+            "#448844",
+        ][w]
+        for sa in range(0, 608, 2):
+            # for each subaperture
+            subap_index: int = w * 304 * 2 + sa
+            corners = meas_coords[subap_index].corners()
+            corners += [corners[0]]
+            corners_arr = np.array(corners).T
+            # plot a square with the appropriate position
+            line, = ax.plot(*corners_arr, color=color, label=f"WFS-{w+1:d}")
+            legend[f"WFS-{w+1}"] = line
+
+    actu_coords = np.array([x.pos() for x in system.actu_coords()])
+    line, = ax.plot(*actu_coords.T, "x", color="#ff0000", label="DM")
+    legend["DM"] = line
+    ax.legend(handles=legend.values())
+    ax.set_title(f"WFS/DM Registration, KAPA, {altitude:0.1f} km")
+    ax.axis("square")
 
 
 if __name__ == "__main__":
