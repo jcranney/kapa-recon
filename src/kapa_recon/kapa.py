@@ -9,7 +9,6 @@ import json
 TEL_DIAM: float = 10.0
 NSUBX: int = 20
 NACTX: int = 21
-LGS_RAD: float = 10.0 * 4.848e-6
 GS_ALT: float = 90e3
 NSUBAP_SAMPLES: int = 3
 AS2RAD: float = np.pi / 180 / 60 / 60
@@ -17,8 +16,9 @@ AS2RAD: float = np.pi / 180 / 60 / 60
 
 @dataclass
 class Perturbations:
-    dm_coupling: float = 0.3
-    dm_mpv: float = 1.0  # microns per volt
+    dm_coupling: float = 0.1
+    dm_mpv: float = 0.05  # microns per volt
+    dm_aspect_ratio: float = 1.0
     wfs1_delta_x: float = 0.0
     wfs1_delta_y: float = 0.0
     wfs1_clocking: float = 0.0
@@ -74,7 +74,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
             alt=rao.Altitude(0.0),
             coupling=pert.dm_coupling,
             microns_per_volt=pert.dm_mpv,
-            actu_pos=rao.Positions.rect_grid(NACTX, TEL_DIAM, TEL_DIAM),
+            actu_pos=rao.Positions.rect_grid(NACTX, TEL_DIAM*pert.dm_aspect_ratio, TEL_DIAM),
             misreg=rao.MisReg(delta=(0.0, 0.0), clocking=0.0, zoom=1.0),
         )
     ]
