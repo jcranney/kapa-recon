@@ -7,11 +7,13 @@ from dataclasses import dataclass, fields
 import json
 
 TEL_DIAM: float = 10.0
+COBS: float = 0.16
 NSUBX: int = 20
 NACTX: int = 21
 GS_ALT: float = 90e3
 NSUBAP_SAMPLES: int = 3
 AS2RAD: float = np.pi / 180 / 60 / 60
+SPIDER_THICKNESS: float = 0.0
 
 
 @dataclass
@@ -92,6 +94,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs1_zoom,
             ),
             subap_samples=NSUBAP_SAMPLES,
+            pupil=rao.Pupil(TEL_DIAM, COBS, spiders=rao.Spiders([], SPIDER_THICKNESS))
         ),
         rao.Wfs(
             dir=wfs_dirs[1],
@@ -103,6 +106,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs2_zoom,
             ),
             subap_samples=NSUBAP_SAMPLES,
+            pupil=rao.Pupil(TEL_DIAM, COBS, spiders=rao.Spiders([], SPIDER_THICKNESS))
         ),
         rao.Wfs(
             dir=wfs_dirs[2],
@@ -114,6 +118,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs3_zoom,
             ),
             subap_samples=NSUBAP_SAMPLES,
+            pupil=rao.Pupil(TEL_DIAM, COBS, spiders=rao.Spiders([], SPIDER_THICKNESS))
         ),
         rao.Wfs(
             dir=wfs_dirs[3],
@@ -125,6 +130,7 @@ def kapa(pert: Perturbations) -> rao.ExpandedSystem:
                 pert.wfs4_zoom,
             ),
             subap_samples=NSUBAP_SAMPLES,
+            pupil=rao.Pupil(TEL_DIAM, COBS, spiders=rao.Spiders([], SPIDER_THICKNESS))
         ),
     ]
     ctrl = rao.Ctrl(
