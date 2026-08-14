@@ -63,7 +63,7 @@ Build an AO reconstructor from a specified AO system definition.
     dtc = compose_matrix(expanded_system.d_ts_com())
     ctm = compose_matrix(expanded_system.c_ts_meas())
     dmc = compose_matrix(expanded_system.d_meas_com())
-    pm = np.array(expanded_system.p_meas())
+    # pm = np.array(expanded_system.p_meas())
 
     tt_filter_block = np.eye(NSUBAP) - np.ones([NSUBAP, NSUBAP]) / NSUBAP
     tt_filter = np.kron(tt_filter_block,np.eye(2))
