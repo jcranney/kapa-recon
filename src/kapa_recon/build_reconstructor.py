@@ -9,9 +9,15 @@ import argparse
 import datetime
 
 # Optimisable parameters
-D_REG = float(os.environ.get("D_REG", "1e-4"))
-C_REG = float(os.environ.get("C_REG", "1e2"))
-TTF = bool(os.environ.get("TTF", "1") == "1")
+D_REG = float(os.environ.get("D_REG", "1e-2"))  # verified!
+C_REG = float(os.environ.get("C_REG", "1e2"))  # unused, since kapa flux measurements
+TTF = bool(os.environ.get("TTF", "1") == "1")  # verified!
+
+# D_REG tuning daytime:
+# 3e-3 -> 6976 pixel count
+# 1e-2 -> 7449 <- sweet spot
+# 3e-2 -> 7367
+# 9e-2 -> 6721
 
 # Constants
 NSUBAP: int = 304
@@ -60,19 +66,8 @@ Build an AO reconstructor from a specified AO system definition.
     pm = np.array(expanded_system.p_meas())
 
     tt_filter_block = np.eye(NSUBAP) - np.ones([NSUBAP, NSUBAP]) / NSUBAP
-    tt_filter = np.concat(
-        [
-            np.concat(
-                [
-                    tt_filter_block if i == j else tt_filter_block * 0.0
-                    for i in range(2 * 4)
-                ],
-                axis=0,
-            )
-            for j in range(2 * 4)
-        ],
-        axis=1,
-    )
+    tt_filter = np.kron(tt_filter_block,np.eye(2))
+    tt_filter = np.kron(np.eye(4), tt_filter)
 
     print(
         f"unbiased cmm diag mean/std: {cmm.diagonal().mean():0.3e} "
