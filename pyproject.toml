@@ -1,7 +1,7 @@
 [project]
 name = "kapa-recon"
-version = "0.2.1"
-description = "Add your description here"
+version = "0.2.2"
+description = "Reconstructor generation for the Keck KAPA AO System"
 readme = "README.md"
 authors = [
     { name = "Jesse Cranney", email = "jesse.cranney@anu.edu.au" }
@@ -18,26 +18,12 @@ dependencies = [
     "scipy>=1.17.1",
     "scipy-stubs>=1.18.0.1",
     "taguchi>=1.2.2",
-    "torch>=2.12.0",
     "tqdm>=4.67.3",
 ]
 
 [project.scripts]
 fit-imat = "kapa_recon:fit_imat.main"
 build-cmat = "kapa_recon:build_reconstructor.main"
-
-[[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[tool.uv.sources]
-torch = [
-  { index = "pytorch-cpu" },
-]
-torchvision = [
-  { index = "pytorch-cpu" },
-]
 
 [build-system]
 requires = ["uv_build>=0.11.25,<0.12.0"]
