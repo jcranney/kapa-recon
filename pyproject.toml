@@ -1,6 +1,6 @@
 [project]
 name = "kapa-recon"
-version = "0.2.2"
+version = "0.2.3"
 description = "Reconstructor generation for the Keck KAPA AO System"
 readme = "README.md"
 authors = [
@@ -14,7 +14,7 @@ dependencies = [
     "numpy>=2.5.2",
     "pydantic>=2.13.4",
     "pyyaml>=6.0.3",
-    "rao>=0.3.5",
+    "rao>=0.3.11",
     "scipy>=1.17.1",
     "scipy-stubs>=1.18.0.1",
     "taguchi>=1.2.2",
